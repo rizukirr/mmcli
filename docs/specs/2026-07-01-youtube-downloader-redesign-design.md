@@ -1,7 +1,7 @@
 ---
 title: youtube-downloader-redesign
 date: 2026-07-01
-status: draft
+status: approved
 ---
 
 # YouTube Downloader Redesign — Design
