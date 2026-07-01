@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build (${{ matrix.os }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            os: linux
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            os: linux
+            arch: aarch64
+          - runner: windows-latest
+            os: windows
+            arch: x86_64
+            ext: .exe
+          - runner: windows-11-arm
+            os: windows
+            arch: arm64
+            ext: .exe
+          - runner: macos-26-intel
+            os: macos
+            arch: x86_64
+          - runner: macos-26
+            os: macos
+            arch: aarch64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Build binary
+        run: uv run --with pyinstaller pyinstaller --onefile --name mmcli --collect-all pytubefix main.py
+      - name: Smoke test
+        shell: bash
+        run: |
+          dist/mmcli${{ matrix.ext }} --version
+      - name: Stage renamed binary
+        shell: bash
+        run: |
+          mkdir -p out
+          cp "dist/mmcli${{ matrix.ext }}" "out/mmcli-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mmcli-${{ matrix.os }}-${{ matrix.arch }}
+          path: out/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*

@@ -1,6 +1,7 @@
 import asyncio
 import ffmpeg
 import os
+import shutil
 import textwrap
 from pathlib import Path
 from datetime import datetime
@@ -206,6 +207,22 @@ async def convert_files_functional(
     max_workers: int = 1,
 ) -> List[Dict[str, Any]]:
     """Convert batch of files using async concurrency."""
+    if shutil.which("ffmpeg") is None:
+        print(
+            "FFmpeg not found on PATH. Install FFmpeg and try again: "
+            "https://ffmpeg.org/download.html"
+        )
+        return [
+            {
+                "input_file": str(input_file),
+                "output_file": None,
+                "success": False,
+                "format": output_format,
+                "error": "ffmpeg not found",
+            }
+            for input_file in input_files
+        ]
+
     resolved_output_dir = ensure_output_directory(output_dir)
 
     results = await process_conversion_batch(
