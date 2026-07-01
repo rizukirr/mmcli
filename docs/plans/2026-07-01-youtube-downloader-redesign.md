@@ -1111,7 +1111,7 @@ EOF
 - Modify: `pyproject.toml`
 - Modify: `requirements.txt`
 
-- [ ] **Step 1: Edit `pyproject.toml`**
+- [x] **Step 1: Edit `pyproject.toml`**
 
 In the `[project]` `dependencies` array, delete the `"pyyaml>=6.0",` line. Then delete the entire `config` optional-dependency group so this block:
 
@@ -1138,7 +1138,7 @@ test = [
 ]
 ```
 
-- [ ] **Step 2: Edit `requirements.txt`**
+- [x] **Step 2: Edit `requirements.txt`**
 
 Replace the entire contents with:
 
@@ -1150,7 +1150,7 @@ pytest-cov>=7.0
 pytest-asyncio>=1.0
 ```
 
-- [ ] **Step 3: Verify PyYAML is gone and the env still resolves**
+- [x] **Step 3: Verify PyYAML is gone and the env still resolves**
 
 Run: `grep -ri pyyaml pyproject.toml requirements.txt; echo "exit=$?"`
 Expected: no matching lines; `echo` prints `exit=1` (grep found nothing).
@@ -1158,7 +1158,7 @@ Expected: no matching lines; `echo` prints `exit=1` (grep found nothing).
 Run: `uv sync`
 Expected: completes successfully (lockfile resolves without PyYAML).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add pyproject.toml requirements.txt uv.lock
