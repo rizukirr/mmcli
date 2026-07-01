@@ -217,27 +217,3 @@ def validate_youtube_url(url: str) -> Dict[str, bool]:
         "is_valid": is_youtube_url(url),
         "is_playlist": is_playlist_url(url)
     }
-
-
-# Async aliases for backward compatibility
-async def download_playlist_videos_parallel(
-    url: str,
-    output_path: str,
-    resolution: Optional[str] = None,
-    max_workers: int = 3,
-    progress_callback: Callable = on_progress
-) -> List[Dict[str, Any]]:
-    """Async alias for playlist video downloads."""
-    print(f"Starting async download with max {max_workers} concurrent downloads...")
-    return await download_playlist_videos(url, output_path, resolution, progress_callback, max_workers)
-
-
-async def download_playlist_audios_parallel(
-    url: str,
-    output_path: str,
-    max_workers: int = 3,
-    progress_callback: Callable = on_progress
-) -> List[Dict[str, Any]]:
-    """Async alias for playlist audio downloads."""
-    print(f"Starting async audio download with max {max_workers} concurrent downloads...")
-    return await download_playlist_audios(url, output_path, progress_callback, max_workers)
