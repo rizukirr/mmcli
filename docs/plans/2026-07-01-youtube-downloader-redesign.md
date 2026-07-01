@@ -591,16 +591,16 @@ EOF
 **Files:**
 - Modify: `app/tools/youtube_downloader.py`
 
-- [ ] **Step 1: Delete the alias block**
+- [x] **Step 1: Delete the alias block**
 
 In `app/tools/youtube_downloader.py`, delete everything from the comment line `# Async aliases for backward compatibility` to the end of the file (currently lines 222–243), i.e. remove both `download_playlist_videos_parallel` and `download_playlist_audios_parallel`. The file should now end with the `validate_youtube_url` function.
 
-- [ ] **Step 2: Verify the aliases are gone and the module still imports**
+- [x] **Step 2: Verify the aliases are gone and the module still imports**
 
 Run: `uv run python -c "import app.tools.youtube_downloader as y; assert not hasattr(y, 'download_playlist_videos_parallel'); assert not hasattr(y, 'download_playlist_audios_parallel'); assert hasattr(y, 'validate_youtube_url'); print('ok')"`
 Expected: prints `ok`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app/tools/youtube_downloader.py
