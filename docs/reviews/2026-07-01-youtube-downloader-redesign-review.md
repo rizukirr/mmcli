@@ -31,6 +31,10 @@ Applied at the user's "fix nits" request:
 - **Robust conversion mapping** — playlist `conversion_map` keyed on the original download path. Addresses self-critique risk #3.
 - Suite now 41 passing (was 39; +2 tests). Self-critique risk #1 (resolution unavailable) intentionally left as-is — it already fails gracefully and a fallback would be a behavior change beyond a nit.
 
+### Follow-up: clean `--help` output (commit 40df0f4)
+
+At the user's "fix help command" request: the `--format` argument dumped all ~32 aliases into the usage line and option help. Added `metavar="FORMAT"` so `--help` shows `--format FORMAT` (choices still validate invalid values); help text points to `doc/commands.md` for the full list. Tests: `test_help_format_uses_clean_metavar`, `test_invalid_format_still_rejected_with_metavar`. Suite now 43 passing.
+
 ## Pass-by-pass
 
 - **Pass 1 (spec coverage):** All 9 Goals + Non-goals + Constraint C2 verified satisfied by verify-gate (3-pass unanimous). No Non-goal violated: no local-file conversion, no image/subtitle tables, no config file, no non-YouTube path. No block.
