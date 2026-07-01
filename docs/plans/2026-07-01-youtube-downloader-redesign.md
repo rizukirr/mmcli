@@ -621,7 +621,7 @@ EOF
 - Create/replace: `tests/test_media_downloader.py`
 - Delete: `tests/test_playlist_downloader.py`, `app/utils/config.py`, `config.toml`
 
-- [ ] **Step 1: Rewrite the test file**
+- [x] **Step 1: Rewrite the test file**
 
 Replace the entire contents of `tests/test_media_downloader.py` with:
 
@@ -842,12 +842,12 @@ async def test_download_playlist_audio_conversion(monkeypatch, tmp_path):
     assert all(r["file_path"].endswith(".mp3") for r in results)
 ```
 
-- [ ] **Step 2: Run the test to confirm it fails**
+- [x] **Step 2: Run the test to confirm it fails**
 
 Run: `uv run pytest tests/test_media_downloader.py`
 Expected: failures/errors — the new helpers (`resolve_output_dir`, `normalize_resolution`, etc.) and the rewritten `download` signature don't exist yet.
 
-- [ ] **Step 3: Rewrite `app/tools/media_downloader.py`**
+- [x] **Step 3: Rewrite `app/tools/media_downloader.py`**
 
 Replace the entire contents with:
 
@@ -1071,23 +1071,23 @@ async def download(args):
         sys.exit(1)
 ```
 
-- [ ] **Step 4: Delete the obsolete config + playlist test files**
+- [x] **Step 4: Delete the obsolete config + playlist test files**
 
 ```bash
 git rm app/utils/config.py config.toml tests/test_playlist_downloader.py
 ```
 
-- [ ] **Step 5: Run the test to confirm it passes**
+- [x] **Step 5: Run the test to confirm it passes**
 
 Run: `uv run pytest tests/test_media_downloader.py`
 Expected: PASS (all tests, including `test_download_playlist` asserting the `MyList` subfolder exists).
 
-- [ ] **Step 6: Run the full suite to confirm nothing else broke**
+- [x] **Step 6: Run the full suite to confirm nothing else broke**
 
 Run: `uv run pytest`
 Expected: PASS — all collected tests across `tests/` pass (coverage report prints; collection no longer references `config`, `convert`, or image/subtitle formats).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add app/tools/media_downloader.py tests/test_media_downloader.py
