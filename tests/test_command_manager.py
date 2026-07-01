@@ -53,3 +53,19 @@ def test_version_exits_zero():
     with pytest.raises(SystemExit) as exc:
         run_with_argv(["--version"])
     assert exc.value.code == 0
+
+
+def test_help_format_uses_clean_metavar(capsys):
+    """--help must show `--format FORMAT`, not dump every alias inline."""
+    with pytest.raises(SystemExit) as exc:
+        run_with_argv(["--help"])
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert "FORMAT" in out
+    assert "{mp4,mkv" not in out  # no giant choices braces dump
+
+
+def test_invalid_format_still_rejected_with_metavar():
+    """metavar is display-only; choices still validate."""
+    with pytest.raises(SystemExit):
+        run_with_argv(["https://youtu.be/x", "--format", "exe"])

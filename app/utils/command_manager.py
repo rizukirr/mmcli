@@ -32,8 +32,10 @@ def command_manager():
         "--format",
         "-f",
         choices=[f["alias"] for f in all_formats],
-        help="Output format. An audio format (mp3, m4a, ...) downloads audio only; "
-        "a video format converts the container.",
+        metavar="FORMAT",
+        help="Output format (e.g. mp4, mkv, mp3, m4a). An audio format downloads "
+        "audio only; a video format converts the container. See doc/commands.md "
+        "for the full list.",
     )
     parser.add_argument(
         "--output-dir",
