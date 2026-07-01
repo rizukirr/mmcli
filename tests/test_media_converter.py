@@ -67,3 +67,32 @@ async def test_convert_single_file_functional_success(monkeypatch, tmp_path):
     assert result["success"] is True
     assert result["output_file"].endswith(".mp4")
     assert result["format"] == "mp4"
+
+
+@pytest.mark.asyncio
+async def test_convert_files_functional_missing_ffmpeg(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr("shutil.which", lambda name: None)
+    results = await mc.convert_files_functional([Path("a.mov")], "mp3", str(tmp_path))
+    assert results == [
+        {
+            "input_file": "a.mov",
+            "output_file": None,
+            "success": False,
+            "format": "mp3",
+            "error": "ffmpeg not found",
+        }
+    ]
+    out = capsys.readouterr().out
+    assert "FFmpeg not found on PATH" in out
+    assert "https://ffmpeg.org/download.html" in out
+
+
+@pytest.mark.asyncio
+async def test_convert_files_functional_ffmpeg_present_no_short_circuit(
+    monkeypatch, tmp_path
+):
+    # ffmpeg present: guard is a no-op. Empty batch => empty results, and the
+    # guard's "ffmpeg not found" error must NOT appear.
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/ffmpeg")
+    results = await mc.convert_files_functional([], "mp3", str(tmp_path))
+    assert results == []
