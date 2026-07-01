@@ -27,8 +27,8 @@ The installation script will:
 ## Prerequisites
 
 ### Required
-- **Python 3.6+** - [Download from python.org](https://python.org/downloads/)
-- **pip** - Usually comes with Python
+- **Python 3.12+** - [Download from python.org](https://python.org/downloads/)
+- **pip** or **[uv](https://docs.astral.sh/uv/)** - for installing dependencies
 
 ### Automatically Handled
 - **ffmpeg** - The installer will attempt to install this automatically:
@@ -80,7 +80,7 @@ mmcli --version
 - Or run with sudo: `sudo ./install.sh`
 
 ### Python version issues
-- Ensure you have Python 3.6 or newer
+- Ensure you have Python 3.12 or newer
 - On some systems, use `python3` instead of `python`
 
 ## Manual Installation

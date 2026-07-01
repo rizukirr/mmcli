@@ -7,7 +7,7 @@ from pathlib import Path
 from glob import glob
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from functools import partial, reduce
+from functools import reduce
 from ..utils.media_format import all_formats
 from ..utils.config import get_max_workers_default
 

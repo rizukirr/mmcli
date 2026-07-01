@@ -1,8 +1,6 @@
-ffmpeg-python
-pytubefix
-tomli>=2.0.1; python_version < '3.11'
+ffmpeg-python>=0.2.0
+pytubefix>=10.10.1
 PyYAML>=6.0
-pytest>=6.0
-pytest-mock>=3.0
-pytest-cov>=3.0
-pytest-asyncio>=0.21.0
+pytest>=9.0
+pytest-cov>=7.0
+pytest-asyncio>=1.0

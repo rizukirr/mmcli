@@ -192,3 +192,6 @@ Icon
 .Trash-*
 .nfs*
 CLAUDE.md
+
+# vibe isolated worktrees
+.vibe-worktrees/

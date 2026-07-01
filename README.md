@@ -37,6 +37,12 @@ Or install manually:
 ```bash
 git clone https://github.com/rizkirakasiwi/mmcli.git
 cd mmcli
+
+# Recommended: uv
+uv sync
+uv run mmcli --help
+
+# Or with pip
 pip install -e .
 ```
 ---
@@ -208,10 +214,10 @@ See [doc/configuration.md](doc/configuration.md) for complete configuration opti
 ## ⚠️ Technical Notes
 
 ### Requirements
-* Requires **Python 3.6+**
+* Requires **Python 3.12+**
 * [FFmpeg](https://ffmpeg.org/download.html) installed and available in `PATH` for conversions
 * Internet connection for YouTube downloads
-* Optional: `tomli` for Python <3.11 (TOML config support)
+* TOML config support is built in (via the standard-library `tomllib`)
 * Optional: `PyYAML` for YAML config support
 
 ### Dependencies
@@ -247,8 +253,8 @@ We welcome contributions! Since this project is at an **early stage**, any feedb
 
 1. Fork the repository
 2. Read [doc/CONTRIBUTOR_GUIDANCE.md](doc/CONTRIBUTOR_GUIDANCE.md) 
-3. Set up development environment: `pip install -e .[test]`
-4. **Run tests before submitting**: `pytest`
+3. Set up development environment: `uv sync --extra test` (or `pip install -e .[test]`)
+4. **Run tests before submitting**: `uv run pytest` (or `pytest`)
 5. Create Pull Request
 
 **All tests must pass before PR submission** - see contributor guidance for details.
