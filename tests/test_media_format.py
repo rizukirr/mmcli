@@ -32,6 +32,7 @@ def test_common_audio_formats_exist():
 
 def test_no_image_or_subtitle_tables():
     import app.utils.media_format as mf
+
     assert not hasattr(mf, "image_formats")
     assert not hasattr(mf, "subtitle_formats")
 

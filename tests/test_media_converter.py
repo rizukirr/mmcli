@@ -27,7 +27,11 @@ def test_create_conversion_config(tmp_path):
 
 def test_calculate_conversion_stats():
     results = [{"success": True}, {"success": True}, {"success": False}]
-    assert mc.calculate_conversion_stats(results) == {"total": 3, "success": 2, "failed": 1}
+    assert mc.calculate_conversion_stats(results) == {
+        "total": 3,
+        "success": 2,
+        "failed": 1,
+    }
 
 
 def test_format_conversion_summary_mentions_counts():
