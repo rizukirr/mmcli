@@ -22,7 +22,14 @@
 - None that violate the spec. (The three risks below are pre-existing behaviors carried over unchanged, not regressions, and outside this refactor's scope.)
 
 ### Nit
-- `app/tools/media_downloader.py` — the `str(Path(f))`-keyed `conversion_map` in `_finalize_playlist` relies on the downloaded path string equalling its `Path` round-trip. This is copied verbatim from the pre-existing playlist logic and holds for normal absolute paths; noted for awareness, not a defect introduced here.
+- ~~`app/tools/media_downloader.py` — the `str(Path(f))`-keyed `conversion_map` in `_finalize_playlist` relies on the downloaded path string equalling its `Path` round-trip.~~ **RESOLVED** in commit `ca5acc6`: the map is now keyed on the original download path (`to_convert[i]`), removing the round-trip dependency.
+
+## Post-review fixes (commit ca5acc6)
+
+Applied at the user's "fix nits" request:
+- **Playlist title sanitization** — new `sanitize_subfolder()` strips path separators (`/`, `\`) and falls back to `playlist` when nothing meaningful survives, so a title like `Rock/Pop` yields a single safe folder segment (`Rock_Pop`) rather than a nested/traversing path. Addresses self-critique risk #2. Tests: `test_sanitize_subfolder`, `test_download_playlist_unsafe_title`.
+- **Robust conversion mapping** — playlist `conversion_map` keyed on the original download path. Addresses self-critique risk #3.
+- Suite now 41 passing (was 39; +2 tests). Self-critique risk #1 (resolution unavailable) intentionally left as-is — it already fails gracefully and a fallback would be a behavior change beyond a nit.
 
 ## Pass-by-pass
 
