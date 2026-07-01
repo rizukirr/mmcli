@@ -56,13 +56,16 @@ def test_version_exits_zero():
 
 
 def test_help_format_uses_clean_metavar(capsys):
-    """--help must show `--format FORMAT`, not dump every alias inline."""
+    """--help shows `--format FORMAT` (clean usage) but lists formats in the body."""
     with pytest.raises(SystemExit) as exc:
         run_with_argv(["--help"])
     assert exc.value.code == 0
     out = capsys.readouterr().out
     assert "FORMAT" in out
-    assert "{mp4,mkv" not in out  # no giant choices braces dump
+    assert "{mp4,mkv" not in out  # no giant choices braces dump in the usage line
+    # the supported formats are enumerated in the help body
+    assert "mp3" in out and "m4a" in out  # audio
+    assert "mkv" in out and "webm" in out  # video
 
 
 def test_invalid_format_still_rejected_with_metavar():

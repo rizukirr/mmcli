@@ -29,3 +29,11 @@ mmcli "https://youtube.com/watch?v=..." --format mkv          # video, converted
 mmcli "https://youtube.com/playlist?list=..." --format mp3    # whole playlist as mp3
 mmcli "https://youtube.com/watch?v=..." --output-dir ~/Videos # choose the output directory
 ```
+
+## Supported `--format` values
+
+An **audio** format downloads audio only; a **video** format downloads video and
+converts the container.
+
+- **Audio:** `mp3`, `wav`, `flac`, `aac`, `m4a`, `ogg`, `oga`, `opus`, `wma`, `alac`, `amr`, `ac3`, `dts`, `eac3`
+- **Video:** `mp4`, `mkv`, `avi`, `mov`, `flv`, `webm`, `mpeg`, `mpg`, `ts`, `m2ts`, `ogv`, `3gp`, `3g2`, `vob`, `f4v`, `wmv`, `rm`, `rmvb`

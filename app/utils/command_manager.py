@@ -1,5 +1,5 @@
 import argparse
-from .media_format import all_formats
+from .media_format import all_formats, video_formats, audio_formats
 from .constants import APP_VERSION
 
 
@@ -28,14 +28,18 @@ def command_manager():
         "-r",
         help="Video resolution, e.g. 720 or 720p (ignored for audio formats)",
     )
+    video_aliases = ", ".join(f["alias"] for f in video_formats)
+    audio_aliases = ", ".join(f["alias"] for f in audio_formats)
     parser.add_argument(
         "--format",
         "-f",
         choices=[f["alias"] for f in all_formats],
         metavar="FORMAT",
-        help="Output format (e.g. mp4, mkv, mp3, m4a). An audio format downloads "
-        "audio only; a video format converts the container. See doc/commands.md "
-        "for the full list.",
+        help=(
+            "Output format. Audio formats download audio only "
+            f"({audio_aliases}); video formats convert the container "
+            f"({video_aliases})."
+        ),
     )
     parser.add_argument(
         "--output-dir",
