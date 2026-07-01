@@ -33,7 +33,11 @@ def test_normalize_resolution():
 
 def test_calculate_success_stats():
     results = [{"success": True}, {"success": False}, {"success": True}]
-    assert md.calculate_success_stats(results) == {"total": 3, "success": 2, "failed": 1}
+    assert md.calculate_success_stats(results) == {
+        "total": 3,
+        "success": 2,
+        "failed": 1,
+    }
 
 
 def test_sanitize_subfolder():
@@ -47,12 +51,17 @@ def test_sanitize_subfolder():
 @pytest.mark.asyncio
 async def test_download_playlist_unsafe_title(monkeypatch, tmp_path):
     """A playlist title with path separators becomes one safe folder segment."""
+
     class FakePlaylist:
         title = "Rock/Pop"
 
     async def fake_playlist_videos(url, output_path, resolution=None, max_concurrent=3):
         return [
-            {"success": True, "file_path": str(tmp_path / "1.mp4"), "metadata": {"title": "one"}},
+            {
+                "success": True,
+                "file_path": str(tmp_path / "1.mp4"),
+                "metadata": {"title": "one"},
+            },
         ]
 
     monkeypatch.setattr(
@@ -165,8 +174,16 @@ async def test_download_playlist(monkeypatch, tmp_path):
 
     async def fake_playlist_videos(url, output_path, resolution=None, max_concurrent=3):
         return [
-            {"success": True, "file_path": str(tmp_path / "1.mp4"), "metadata": {"title": "one"}},
-            {"success": False, "file_path": None, "metadata": {"title": "two", "error": "boom"}},
+            {
+                "success": True,
+                "file_path": str(tmp_path / "1.mp4"),
+                "metadata": {"title": "one"},
+            },
+            {
+                "success": False,
+                "file_path": None,
+                "metadata": {"title": "two", "error": "boom"},
+            },
         ]
 
     monkeypatch.setattr(
@@ -197,6 +214,7 @@ async def test_download_playlist(monkeypatch, tmp_path):
 @pytest.mark.asyncio
 async def test_download_playlist_audio_conversion(monkeypatch, tmp_path):
     """--format mp3 on a playlist downloads audio for every item and converts each to mp3."""
+
     class FakePlaylist:
         title = "MyList"
 
@@ -205,8 +223,16 @@ async def test_download_playlist_audio_conversion(monkeypatch, tmp_path):
     async def fake_playlist_audios(url, output_path, max_concurrent=3):
         calls["audio"] = True
         return [
-            {"success": True, "file_path": str(tmp_path / "1.m4a"), "metadata": {"title": "one"}},
-            {"success": True, "file_path": str(tmp_path / "2.m4a"), "metadata": {"title": "two"}},
+            {
+                "success": True,
+                "file_path": str(tmp_path / "1.m4a"),
+                "metadata": {"title": "one"},
+            },
+            {
+                "success": True,
+                "file_path": str(tmp_path / "2.m4a"),
+                "metadata": {"title": "two"},
+            },
         ]
 
     async def fake_playlist_videos(url, output_path, resolution=None, max_concurrent=3):

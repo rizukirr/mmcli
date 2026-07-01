@@ -111,7 +111,9 @@ async def _download_single(
         return _failed(result)
 
     file_path = result["file_path"]
-    if target_format and should_convert(extract_file_extension(file_path), target_format):
+    if target_format and should_convert(
+        extract_file_extension(file_path), target_format
+    ):
         file_path = await convert_downloaded_file(file_path, target_format)
     return _finalize_single(result, file_path)
 
@@ -138,7 +140,8 @@ async def _finalize_playlist(
 
     if target_format:
         to_convert = [
-            f for f in downloaded
+            f
+            for f in downloaded
             if should_convert(extract_file_extension(f), target_format)
         ]
         if to_convert:

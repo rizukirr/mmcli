@@ -4,7 +4,9 @@ from pytubefix import YouTube, Playlist
 from pytubefix.cli import on_progress
 
 
-def create_youtube_instance(url: str, progress_callback: Callable = on_progress) -> YouTube:
+def create_youtube_instance(
+    url: str, progress_callback: Callable = on_progress
+) -> YouTube:
     """Create YouTube instance with progress callback."""
     return YouTube(url, on_progress_callback=progress_callback)
 
@@ -37,7 +39,7 @@ def get_video_metadata(yt: YouTube) -> Dict[str, Any]:
         "title": yt.title,
         "length": yt.length,
         "views": yt.views,
-        "author": yt.author
+        "author": yt.author,
     }
 
 
@@ -46,19 +48,19 @@ def get_playlist_metadata(playlist: Playlist) -> Dict[str, Any]:
     return {
         "title": playlist.title,
         "video_count": len(list(playlist.videos)),
-        "owner": playlist.owner
+        "owner": playlist.owner,
     }
 
 
 async def download_single_video(
-    url: str, 
-    output_path: str, 
+    url: str,
+    output_path: str,
     resolution: Optional[str] = None,
-    progress_callback: Callable = on_progress
+    progress_callback: Callable = on_progress,
 ) -> Dict[str, Any]:
     """Download single YouTube video asynchronously."""
     loop = asyncio.get_event_loop()
-    
+
     def _download():
         yt = create_youtube_instance(url, progress_callback)
         stream = select_video_stream(yt, resolution)
@@ -67,20 +69,18 @@ async def download_single_video(
         return {
             "success": downloaded_file is not None,
             "file_path": downloaded_file,
-            "metadata": metadata
+            "metadata": metadata,
         }
-    
+
     return await loop.run_in_executor(None, _download)
 
 
 async def download_single_audio(
-    url: str, 
-    output_path: str,
-    progress_callback: Callable = on_progress
+    url: str, output_path: str, progress_callback: Callable = on_progress
 ) -> Dict[str, Any]:
     """Download single YouTube audio asynchronously."""
     loop = asyncio.get_event_loop()
-    
+
     def _download():
         yt = create_youtube_instance(url, progress_callback)
         stream = select_audio_stream(yt)
@@ -89,9 +89,9 @@ async def download_single_audio(
         return {
             "success": downloaded_file is not None,
             "file_path": downloaded_file,
-            "metadata": metadata
+            "metadata": metadata,
         }
-    
+
     return await loop.run_in_executor(None, _download)
 
 
@@ -100,16 +100,18 @@ async def download_playlist_videos(
     output_path: str,
     resolution: Optional[str] = None,
     progress_callback: Callable = on_progress,
-    max_concurrent: int = 3
+    max_concurrent: int = 3,
 ) -> List[Dict[str, Any]]:
     """Download all videos from YouTube playlist asynchronously."""
     playlist = create_playlist_instance(url)
     playlist_meta = get_playlist_metadata(playlist)
-    
+
     async def download_with_info(index: int, yt) -> Dict[str, Any]:
-        print(f"[{index+1}/{playlist_meta['video_count']}] Downloading: {yt.title}")
+        print(f"[{index + 1}/{playlist_meta['video_count']}] Downloading: {yt.title}")
         try:
-            result = await download_single_video(yt.watch_url, output_path, resolution, progress_callback)
+            result = await download_single_video(
+                yt.watch_url, output_path, resolution, progress_callback
+            )
             if result["success"]:
                 print(f"[OK] Successfully downloaded {yt.title}")
             else:
@@ -120,31 +122,35 @@ async def download_playlist_videos(
             return {
                 "success": False,
                 "file_path": None,
-                "metadata": {"title": yt.title, "error": str(e)}
+                "metadata": {"title": yt.title, "error": str(e)},
             }
-    
+
     # Use semaphore to limit concurrent downloads
     semaphore = asyncio.Semaphore(max_concurrent)
-    
+
     async def download_with_semaphore(index: int, yt):
         async with semaphore:
             return await download_with_info(index, yt)
-    
-    tasks = [download_with_semaphore(index, yt) for index, yt in enumerate(playlist.videos)]
+
+    tasks = [
+        download_with_semaphore(index, yt) for index, yt in enumerate(playlist.videos)
+    ]
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     # Handle exceptions in results
     processed_results = []
     for i, result in enumerate(results):
         if isinstance(result, Exception):
-            processed_results.append({
-                "success": False,
-                "file_path": None,
-                "metadata": {"title": f"video_{i}", "error": str(result)}
-            })
+            processed_results.append(
+                {
+                    "success": False,
+                    "file_path": None,
+                    "metadata": {"title": f"video_{i}", "error": str(result)},
+                }
+            )
         else:
             processed_results.append(result)
-    
+
     return processed_results
 
 
@@ -152,16 +158,18 @@ async def download_playlist_audios(
     url: str,
     output_path: str,
     progress_callback: Callable = on_progress,
-    max_concurrent: int = 3
+    max_concurrent: int = 3,
 ) -> List[Dict[str, Any]]:
     """Download all audios from YouTube playlist asynchronously."""
     playlist = create_playlist_instance(url)
     playlist_meta = get_playlist_metadata(playlist)
-    
+
     async def download_with_info(index: int, yt) -> Dict[str, Any]:
-        print(f"[{index+1}/{playlist_meta['video_count']}] Downloading: {yt.title}")
+        print(f"[{index + 1}/{playlist_meta['video_count']}] Downloading: {yt.title}")
         try:
-            result = await download_single_audio(yt.watch_url, output_path, progress_callback)
+            result = await download_single_audio(
+                yt.watch_url, output_path, progress_callback
+            )
             if result["success"]:
                 print(f"[OK] Successfully downloaded {yt.title}")
             else:
@@ -172,31 +180,35 @@ async def download_playlist_audios(
             return {
                 "success": False,
                 "file_path": None,
-                "metadata": {"title": yt.title, "error": str(e)}
+                "metadata": {"title": yt.title, "error": str(e)},
             }
-    
+
     # Use semaphore to limit concurrent downloads
     semaphore = asyncio.Semaphore(max_concurrent)
-    
+
     async def download_with_semaphore(index: int, yt):
         async with semaphore:
             return await download_with_info(index, yt)
-    
-    tasks = [download_with_semaphore(index, yt) for index, yt in enumerate(playlist.videos)]
+
+    tasks = [
+        download_with_semaphore(index, yt) for index, yt in enumerate(playlist.videos)
+    ]
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     # Handle exceptions in results
     processed_results = []
     for i, result in enumerate(results):
         if isinstance(result, Exception):
-            processed_results.append({
-                "success": False,
-                "file_path": None,
-                "metadata": {"title": f"audio_{i}", "error": str(result)}
-            })
+            processed_results.append(
+                {
+                    "success": False,
+                    "file_path": None,
+                    "metadata": {"title": f"audio_{i}", "error": str(result)},
+                }
+            )
         else:
             processed_results.append(result)
-    
+
     return processed_results
 
 
@@ -212,7 +224,4 @@ def is_playlist_url(url: str) -> bool:
 
 def validate_youtube_url(url: str) -> Dict[str, bool]:
     """Validate YouTube URL and determine type."""
-    return {
-        "is_valid": is_youtube_url(url),
-        "is_playlist": is_playlist_url(url)
-    }
+    return {"is_valid": is_youtube_url(url), "is_playlist": is_playlist_url(url)}

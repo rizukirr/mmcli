@@ -33,7 +33,9 @@ def test_output_dir():
 
 
 def test_short_flags():
-    args = run_with_argv(["https://youtu.be/x", "-r", "1080p", "-f", "mkv", "-o", "out/"])
+    args = run_with_argv(
+        ["https://youtu.be/x", "-r", "1080p", "-f", "mkv", "-o", "out/"]
+    )
     assert args.resolution == "1080p"
     assert args.format == "mkv"
     assert args.output_dir == "out/"
