@@ -1,108 +1,45 @@
 import argparse
 from .media_format import all_formats
-from .config import config
+from .constants import APP_VERSION
+
 
 def command_manager():
     epilog_text = """
-    Other:
-        download --help     Show available command for download
-        convert --help      Show available command for convert
-
     Examples:
-        Downloads:
-            mmcli download video --url "https://youtube.com/watch?v=..." --resolution 720p
-            mmcli download audio --url "https://youtube.com/watch?v=..." --format mp3
-            mmcli download --help
-
-        Convert:
-            mmcli convert --path "videos/*.mp4" --to mp3 --output_dir converted/
-            mmcli convert --path "image.jpg" --to png
-            mmcli convert --help
+        mmcli "https://youtube.com/watch?v=..."                      # best-quality video
+        mmcli "https://youtube.com/watch?v=..." --resolution 720     # video at 720p
+        mmcli "https://youtube.com/watch?v=..." --format mp3         # audio only, as mp3
+        mmcli "https://youtube.com/watch?v=..." --format mkv         # video as mkv
+        mmcli "https://youtube.com/playlist?list=..." --format mp3   # whole playlist as mp3
+        mmcli "<url>" --output-dir ~/Downloads                       # choose a directory
     """
     parser = argparse.ArgumentParser(
-        description="Multimedia Helper CLI Command",
+        prog="mmcli",
+        description="YouTube downloader with format conversion",
         epilog=epilog_text,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    
-    # Add version argument
-    version = config.get("application.version", "0.1.0a1")
     parser.add_argument(
-        "--version", "-v",
-        action="version",
-        version=f"mmcli {version}"
+        "--version", "-v", action="version", version=f"mmcli {APP_VERSION}"
     )
-
-    # Top-level commands
-    subparsers = parser.add_subparsers(
-        dest="command", required=True, help="Available commands"
-    )
-    __download_command(subparsers)
-    __convert_command(subparsers)
-
-    return parser.parse_args()
-
-
-def __download_command(subparsers):
-    # Download command
-    download_parser = subparsers.add_parser(
-        "download",
-        help="Download video/audio from YouTube or other platforms",
-    )
-    # Subcommands for download
-    download_subparser = download_parser.add_subparsers(
-        dest="type", required=True, help="Download type"
-    )
-
-    # Video downloader
-    video_parser = download_subparser.add_parser("video", help="Download video")
-    video_parser.add_argument("--url", "-u", required=True, help="Video URL")
-    video_parser.add_argument(
+    parser.add_argument("url", help="YouTube video or playlist URL")
+    parser.add_argument(
         "--resolution",
         "-r",
-        help="(Optional) Video resolution (e.g. '720p', '480p') default: higher resolution",
+        help="Video resolution, e.g. 720 or 720p (ignored for audio formats)",
     )
-    video_parser.add_argument(
+    parser.add_argument(
         "--format",
         "-f",
-        help="(Optional) Output format (e.g. 'mp4', 'mkv') default: mp4",
+        choices=[f["alias"] for f in all_formats],
+        help="Output format. An audio format (mp3, m4a, ...) downloads audio only; "
+        "a video format converts the container.",
     )
-
-    # Audio downloader
-    audio_parser = download_subparser.add_parser("audio", help="Download audio")
-    audio_parser.add_argument("--url", "-u", required=True, help="Audio URL")
-    audio_parser.add_argument(
-        "--format", "-f", help="(Optional) Output format (default: m4a)"
-    )
-
-
-def __convert_command(subparsers):
-    # Convert command
-    convert_parser = subparsers.add_parser(
-        "convert",
-        help="Convert video/audio into another format",
-    )
-    # Arguments for convert
-    convert_parser.add_argument(
-        "--path",
-        "-p",
-        required=True,
-        help="Path to file(s), supports patterns like file/to/*.jpg",
-    )
-    convert_parser.add_argument(
-        "--to",
-        "-t",
-        required=True,
-        choices=list(map(lambda f: f["alias"], all_formats)),
-        help="Target format to convert to",
-    )
-    convert_parser.add_argument(
-        "--output_dir",
+    parser.add_argument(
+        "--output-dir",
         "-o",
-        help="(Optional) Output directory for converted files. default: converter/",
+        dest="output_dir",
+        help="Output directory (default: current directory)",
     )
-    convert_parser.add_argument(
-        "--max-workers", "-w",
-        type=int,
-        help="(Optional) Number of parallel conversions for batch operations (default: from config)"
-    )
+
+    return parser.parse_args()
