@@ -55,7 +55,7 @@ Deleted:
 **Files:**
 - Create: `app/utils/constants.py`
 
-- [ ] **Step 1: Create the constants module**
+- [x] **Step 1: Create the constants module**
 
 ```python
 """Hardcoded defaults for the few values dependencies don't provide."""
@@ -66,12 +66,12 @@ APP_VERSION = "0.1.0b1"
 PLAYLIST_MAX_CONCURRENT = 3
 ```
 
-- [ ] **Step 2: Verify it imports**
+- [x] **Step 2: Verify it imports**
 
 Run: `uv run python -c "from app.utils.constants import APP_VERSION, PLAYLIST_MAX_CONCURRENT; print(APP_VERSION, PLAYLIST_MAX_CONCURRENT)"`
 Expected: prints `0.1.0b1 3`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app/utils/constants.py
