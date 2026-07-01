@@ -5,32 +5,27 @@ on:
   pull_request:
 
 jobs:
-  lint:
+  check:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: lint
+            run: |
+              uv sync
+              uv run ruff check .
+              uv run ruff format --check .
+          - name: test
+            run: |
+              uv sync --extra test
+              uv run pytest
+          - name: build
+            run: uv build
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - run: uv sync
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-      - run: uv sync --extra test
-      - run: uv run pytest
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-      - run: uv build
+      - run: ${{ matrix.run }}
