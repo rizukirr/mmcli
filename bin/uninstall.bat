@@ -1,5 +1,5 @@
 @echo off
-REM Complete Uninstallation Script for mmcli multimedia tool (Windows)
+REM Complete Uninstallation Script for mmcli YouTube downloader (Windows)
 REM This script removes mmcli that was installed globally using pipx
 
 setlocal enabledelayedexpansion

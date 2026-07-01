@@ -1,5 +1,5 @@
 #!/bin/bash
-# Complete Uninstallation Script for mmcli multimedia tool (Linux/Mac)
+# Complete Uninstallation Script for mmcli YouTube downloader (Linux/Mac)
 # This script removes mmcli that was installed globally using pipx
 
 set -e

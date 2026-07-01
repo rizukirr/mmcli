@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mmcli"
 version = "0.1.0b1"
-description = "A multimedia CLI tool for downloading and converting videos, audio, and images"
+description = "A command-line YouTube downloader with built-in audio/video format conversion"
 authors = [{name = "rizkirakasiwi"}]
 dependencies = [
     "ffmpeg-python>=0.2.0",
