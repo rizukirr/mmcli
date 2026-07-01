@@ -366,7 +366,7 @@ EOF
 - Modify: `main.py`
 - Test: `tests/test_integration.py`
 
-- [ ] **Step 1: Rewrite the integration test**
+- [x] **Step 1: Rewrite the integration test**
 
 Replace the entire contents of `tests/test_integration.py` with:
 
@@ -391,12 +391,12 @@ def test_main_handles_keyboard_interrupt(capsys):
     assert "cancelled" in out.lower()
 ```
 
-- [ ] **Step 2: Run the test to confirm it fails**
+- [x] **Step 2: Run the test to confirm it fails**
 
 Run: `uv run pytest tests/test_integration.py`
 Expected: failure — current `main._async_main` branches on `args.command`, so `download` is not awaited unconditionally and `test_main_invokes_download` fails (`download` not awaited with `mock_args`).
 
-- [ ] **Step 3: Rewrite `main.py`**
+- [x] **Step 3: Rewrite `main.py`**
 
 Replace the entire contents with:
 
@@ -425,12 +425,12 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: Run the test to confirm it passes**
+- [x] **Step 4: Run the test to confirm it passes**
 
 Run: `uv run pytest tests/test_integration.py`
 Expected: PASS (both tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add main.py tests/test_integration.py
