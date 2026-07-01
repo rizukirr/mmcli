@@ -57,6 +57,17 @@ async def convert_downloaded_file(downloaded_file: str, target_format: str) -> s
     return downloaded_file
 
 
+def sanitize_subfolder(name: str) -> str:
+    """Reduce a playlist title to a safe single path segment."""
+    # Drop path separators and surrounding whitespace so a title can never
+    # escape base_dir or create nested folders; fall back to 'playlist' when
+    # nothing meaningful survives (empty, or only separators/dots).
+    cleaned = name.replace("/", "_").replace("\\", "_").strip().strip(".")
+    if not cleaned or set(cleaned) <= {"_"}:
+        return "playlist"
+    return cleaned
+
+
 def resolve_playlist_output(base_dir: str, url: str) -> str:
     """Return <base_dir>/<playlist-title>/, falling back to 'playlist'."""
     try:
@@ -64,7 +75,7 @@ def resolve_playlist_output(base_dir: str, url: str) -> str:
         title = playlist.title
     except Exception:
         title = "playlist"
-    return ensure_directory_exists(os.path.join(base_dir, title))
+    return ensure_directory_exists(os.path.join(base_dir, sanitize_subfolder(title)))
 
 
 def _finalize_single(result: Dict[str, Any], converted_path: str) -> Dict[str, Any]:
@@ -143,7 +154,9 @@ async def _finalize_playlist(
                         os.remove(to_convert[i])
                     except OSError:
                         pass
-                conversion_map[cr["input_file"]] = cr
+                # Key on the original download path, not cr["input_file"], so the
+                # lookup below matches regardless of Path round-trip normalization.
+                conversion_map[to_convert[i]] = cr
 
     processed = []
     for r in results:

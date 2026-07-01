@@ -36,6 +36,48 @@ def test_calculate_success_stats():
     assert md.calculate_success_stats(results) == {"total": 3, "success": 2, "failed": 1}
 
 
+def test_sanitize_subfolder():
+    assert md.sanitize_subfolder("Rock/Pop: Best") == "Rock_Pop: Best"
+    assert md.sanitize_subfolder("a\\b") == "a_b"
+    assert md.sanitize_subfolder("  spaced  ") == "spaced"
+    assert md.sanitize_subfolder("") == "playlist"
+    assert md.sanitize_subfolder("///") == "playlist"
+
+
+@pytest.mark.asyncio
+async def test_download_playlist_unsafe_title(monkeypatch, tmp_path):
+    """A playlist title with path separators becomes one safe folder segment."""
+    class FakePlaylist:
+        title = "Rock/Pop"
+
+    async def fake_playlist_videos(url, output_path, resolution=None, max_concurrent=3):
+        return [
+            {"success": True, "file_path": str(tmp_path / "1.mp4"), "metadata": {"title": "one"}},
+        ]
+
+    monkeypatch.setattr(
+        md.youtube_downloader,
+        "validate_youtube_url",
+        lambda u: {"is_valid": True, "is_playlist": True},
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "create_playlist_instance", lambda u: FakePlaylist()
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "download_playlist_videos", fake_playlist_videos
+    )
+    args = SimpleNamespace(
+        url="https://youtube.com/playlist?list=x",
+        resolution=None,
+        format=None,
+        output_dir=str(tmp_path),
+    )
+    await md.download(args)
+    # exactly one sanitized segment, no nested "Rock" directory
+    assert (tmp_path / "Rock_Pop").is_dir()
+    assert not (tmp_path / "Rock").exists()
+
+
 @pytest.mark.asyncio
 async def test_download_rejects_non_youtube(monkeypatch):
     monkeypatch.setattr(
