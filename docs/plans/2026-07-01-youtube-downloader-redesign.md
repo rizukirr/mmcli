@@ -450,7 +450,7 @@ EOF
 - Modify: `app/tools/media_converter.py`
 - Test: `tests/test_media_converter.py`
 
-- [ ] **Step 1: Rewrite the test file**
+- [x] **Step 1: Rewrite the test file**
 
 Replace the entire contents of `tests/test_media_converter.py` with:
 
@@ -522,12 +522,12 @@ async def test_convert_single_file_functional_success(monkeypatch, tmp_path):
     assert result["format"] == "mp4"
 ```
 
-- [ ] **Step 2: Run the test to confirm it fails**
+- [x] **Step 2: Run the test to confirm it fails**
 
 Run: `uv run pytest tests/test_media_converter.py`
 Expected: `test_local_file_surface_removed` fails (the `convert`/`resolve_file_paths`/`validate_conversion_args` attributes still exist).
 
-- [ ] **Step 3: Edit `app/tools/media_converter.py`**
+- [x] **Step 3: Edit `app/tools/media_converter.py`**
 
 Change the import block at the top from:
 
@@ -567,12 +567,12 @@ Then delete these three functions entirely:
 
 Keep everything else unchanged (`ensure_output_directory`, `generate_output_filename`, `create_output_path`, `find_ffmpeg_format`, `create_conversion_config`, `execute_ffmpeg_conversion`, `convert_single_file_functional`, `process_conversion_batch`, `calculate_conversion_stats`, `format_conversion_summary`, `print_conversion_results`, `convert_files_functional`).
 
-- [ ] **Step 4: Run the test to confirm it passes**
+- [x] **Step 4: Run the test to confirm it passes**
 
 Run: `uv run pytest tests/test_media_converter.py`
 Expected: PASS (all tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/tools/media_converter.py tests/test_media_converter.py
