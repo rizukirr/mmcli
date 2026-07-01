@@ -1,320 +1,214 @@
+from types import SimpleNamespace
 import pytest
-import tempfile
-import shutil
-import os
-from pathlib import Path
-from unittest.mock import patch, MagicMock, call
-from app.tools.media_downloader import (
-    get_output_dir,
-    get_video_format_or_default,
-    get_audio_format_or_default,
-    create_output_path,
-    extract_file_extension,
-    should_convert_format,
-    ensure_directory_exists,
-    convert_if_needed,
-    route_video_download,
-    route_audio_download,
-    download,
-)
-from app.tools.youtube_downloader import (
-    create_youtube_instance,
-    select_video_stream,
-    select_audio_stream,
-    download_stream,
-)
+from app.tools import media_downloader as md
 
 
-class TestMediaDownloader:
-    def setup_method(self):
-        """Set up test fixtures"""
-        self.temp_dir = Path(tempfile.mkdtemp())
+def test_resolve_output_dir_default(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    args = SimpleNamespace(output_dir=None)
+    assert md.resolve_output_dir(args) == str(tmp_path)
 
-    def teardown_method(self):
-        """Clean up test fixtures"""
-        if self.temp_dir.exists():
-            shutil.rmtree(self.temp_dir)
 
-    @patch('os.getcwd')
-    def test_get_output_dir(self, mock_getcwd):
-        """Test getting output directory"""
-        mock_getcwd.return_value = "/test/path"
-        result = get_output_dir()
-        expected = os.path.join("/test/path", "downloads")
-        assert result == expected
+def test_resolve_output_dir_explicit(tmp_path):
+    args = SimpleNamespace(output_dir=str(tmp_path))
+    assert md.resolve_output_dir(args) == str(tmp_path)
 
-    def test_select_stream_by_resolution_with_resolution(self):
-        """Test stream selection with specific resolution"""
-        mock_yt = MagicMock()
-        mock_stream = MagicMock()
-        mock_yt.streams.get_by_resolution.return_value = mock_stream
-        
-        result = select_video_stream(mock_yt, "720p")
-        
-        assert result == mock_stream
-        mock_yt.streams.get_by_resolution.assert_called_once_with("720p")
-        mock_yt.streams.get_highest_resolution.assert_not_called()
 
-    def test_select_stream_by_resolution_highest(self):
-        """Test stream selection with highest resolution"""
-        mock_yt = MagicMock()
-        mock_stream = MagicMock()
-        mock_yt.streams.get_highest_resolution.return_value = mock_stream
-        
-        result = select_video_stream(mock_yt, None)
-        
-        assert result == mock_stream
-        mock_yt.streams.get_highest_resolution.assert_called_once()
-        mock_yt.streams.get_by_resolution.assert_not_called()
+def test_extract_file_extension():
+    assert md.extract_file_extension("/a/b/video.MP4") == "mp4"
+    assert md.extract_file_extension("song.mp3") == "mp3"
 
-    def test_get_video_format_or_default_none(self):
-        """Test video format with None input"""
-        result = get_video_format_or_default(None)
-        assert result == "mp4"
 
-    @patch('app.tools.media_downloader.get_format')
-    def test_get_video_format_or_default_valid(self, mock_get_format):
-        """Test video format with valid input"""
-        mock_get_format.return_value = [{"format": "mkv"}]
-        result = get_video_format_or_default("mkv")
-        assert result == "mkv"
+def test_should_convert():
+    assert md.should_convert("m4a", "mp3") is True
+    assert md.should_convert("mp3", "mp3") is False
+    assert md.should_convert("mp4", None) is False
 
-    @patch('app.tools.media_downloader.get_format')
-    def test_get_video_format_or_default_invalid(self, mock_get_format):
-        """Test video format with invalid input"""
-        mock_get_format.return_value = []
-        with pytest.raises(ValueError, match="Unsupported format: invalid"):
-            get_video_format_or_default("invalid")
 
-    def test_get_audio_format_or_default_none(self):
-        """Test audio format with None input"""
-        result = get_audio_format_or_default(None)
-        assert result is None  # None indicates no conversion needed
+def test_normalize_resolution():
+    assert md.normalize_resolution("720") == "720p"
+    assert md.normalize_resolution("720p") == "720p"
+    assert md.normalize_resolution(None) is None
 
-    @patch('app.tools.media_downloader.get_format')
-    def test_get_audio_format_or_default_valid(self, mock_get_format):
-        """Test audio format with valid input"""
-        mock_get_format.return_value = [{"format": "wav"}]
-        result = get_audio_format_or_default("wav")
-        assert result == "wav"
 
-    def test_create_output_path(self):
-        """Test creating output path"""
-        result = create_output_path("/base", "videos")
-        expected = os.path.join("/base", "videos")
-        assert result == expected
+def test_calculate_success_stats():
+    results = [{"success": True}, {"success": False}, {"success": True}]
+    assert md.calculate_success_stats(results) == {"total": 3, "success": 2, "failed": 1}
 
-    def test_extract_file_extension(self):
-        """Test extracting file extension"""
-        assert extract_file_extension("test.mp4") == "mp4"
-        assert extract_file_extension("test.MP4") == "mp4"
-        assert extract_file_extension("path/to/file.avi") == "avi"
-        assert extract_file_extension("no_extension") == ""
 
-    def test_should_convert_format(self):
-        """Test format conversion decision"""
-        assert should_convert_format("mp4", "mp3") is True
-        assert should_convert_format("mp4", "MP4") is False
-        assert should_convert_format("MP4", "mp4") is False
-        assert should_convert_format("webm", "mp4") is True
+@pytest.mark.asyncio
+async def test_download_rejects_non_youtube(monkeypatch):
+    monkeypatch.setattr(
+        md.youtube_downloader,
+        "validate_youtube_url",
+        lambda u: {"is_valid": False, "is_playlist": False},
+    )
+    args = SimpleNamespace(
+        url="https://example.com/x", resolution=None, format=None, output_dir=None
+    )
+    with pytest.raises(SystemExit):
+        await md.download(args)
 
-    @patch('app.tools.youtube_downloader.YouTube')
-    def test_create_youtube_instance(self, mock_youtube):
-        """Test YouTube instance creation"""
-        mock_instance = MagicMock()
-        mock_youtube.return_value = mock_instance
-        
-        result = create_youtube_instance("https://youtube.com/watch?v=test")
-        
-        assert result == mock_instance
-        mock_youtube.assert_called_once()
 
-    @patch('os.path.exists')
-    @patch('os.makedirs')
-    def test_ensure_directory_exists_new(self, mock_makedirs, mock_exists):
-        """Test ensuring new directory exists"""
-        mock_exists.return_value = False
-        
-        result = ensure_directory_exists("/test/path")
-        
-        assert result == "/test/path"
-        mock_makedirs.assert_called_once_with("/test/path", exist_ok=True)
+@pytest.mark.asyncio
+async def test_download_single_video_no_conversion(monkeypatch, tmp_path):
+    async def fake_video(url, output_path, resolution=None):
+        return {
+            "success": True,
+            "file_path": str(tmp_path / "v.mp4"),
+            "metadata": {"title": "V"},
+        }
 
-    @patch('os.path.exists')
-    @patch('os.makedirs')
-    def test_ensure_directory_exists_existing(self, mock_makedirs, mock_exists):
-        """Test ensuring existing directory exists"""
-        mock_exists.return_value = True
-        
-        result = ensure_directory_exists("/test/path")
-        
-        assert result == "/test/path"
-        mock_makedirs.assert_not_called()
+    monkeypatch.setattr(
+        md.youtube_downloader,
+        "validate_youtube_url",
+        lambda u: {"is_valid": True, "is_playlist": False},
+    )
+    monkeypatch.setattr(md.youtube_downloader, "download_single_video", fake_video)
+    args = SimpleNamespace(
+        url="https://youtube.com/watch?v=x",
+        resolution=None,
+        format=None,
+        output_dir=str(tmp_path),
+    )
+    result = await md.download(args)
+    assert result["success"] is True
+    assert result["title"] == "V"
+    assert result["format"] == "mp4"
 
-    def test_download_stream(self):
-        """Test downloading stream"""
-        mock_stream = MagicMock()
-        mock_stream.download.return_value = "/path/to/downloaded/file.mp4"
-        
-        result = download_stream(mock_stream, "/output/path")
-        
-        assert result == "/path/to/downloaded/file.mp4"
-        mock_stream.download.assert_called_once_with(output_path="/output/path")
 
-    @patch('app.tools.media_downloader.media_converter')
-    @patch('os.remove')
-    @pytest.mark.asyncio
-    async def test_convert_media_if_needed_conversion_required(self, mock_remove, mock_converter):
-        """Test media conversion when needed"""
-        mock_args = MagicMock()
-        from unittest.mock import AsyncMock
-        mock_converter.convert.side_effect = AsyncMock(return_value=[{"success": True, "output_file": "test.mp4"}])
-        
-        result = await convert_if_needed("test.webm", "mp4", mock_args)
-        
-        assert result == "test.mp4"
-        mock_remove.assert_called_once_with("test.webm")
+@pytest.mark.asyncio
+async def test_download_audio_triggers_conversion(monkeypatch, tmp_path):
+    async def fake_audio(url, output_path):
+        return {
+            "success": True,
+            "file_path": str(tmp_path / "a.m4a"),
+            "metadata": {"title": "A"},
+        }
 
-    @patch('app.tools.media_downloader.media_converter')
-    @patch('os.remove')
-    @pytest.mark.asyncio
-    async def test_convert_media_if_needed_no_conversion(self, mock_remove, mock_converter):
-        """Test media conversion when not needed"""
-        mock_args = MagicMock()
-        
-        result = await convert_if_needed("test.mp4", "mp4", mock_args)
-        
-        assert result == "test.mp4"
-        mock_converter.convert.assert_not_called()
-        mock_remove.assert_not_called()
+    async def fake_convert(input_files, output_format, output_dir=None, max_workers=1):
+        return [
+            {
+                "input_file": str(input_files[0]),
+                "output_file": str(tmp_path / "a.mp3"),
+                "success": True,
+                "format": output_format,
+            }
+        ]
 
-    @patch('app.tools.media_downloader.get_output_dir')
-    @patch('app.tools.media_downloader.get_video_format_or_default')
-    @patch('app.tools.youtube_downloader.create_youtube_instance')
-    @patch('app.tools.youtube_downloader.select_video_stream')
-    @patch('app.tools.media_downloader.ensure_directory_exists')
-    @patch('app.tools.youtube_downloader.download_stream')
-    @patch('app.tools.media_downloader.convert_if_needed')
-    @pytest.mark.asyncio
-    async def test_download_youtube_video_pipeline_success(self, mock_convert, mock_download, 
-                                           mock_ensure_dir, mock_select_stream,
-                                           mock_create_yt, mock_get_format,
-                                           mock_get_dir):
-        """Test successful video download pipeline"""
-        # Setup mocks
-        mock_args = MagicMock()
-        mock_args.url = "https://youtube.com/watch?v=test"
-        mock_args.format = "mp4"
-        mock_args.resolution = "720p"
-        
-        mock_get_dir.return_value = "/downloads"
-        mock_get_format.return_value = "mp4"
-        mock_yt = MagicMock()
-        mock_yt.title = "Test Video"
-        mock_create_yt.return_value = mock_yt
-        mock_stream = MagicMock()
-        mock_select_stream.return_value = mock_stream
-        mock_ensure_dir.return_value = "/downloads/videos"
-        mock_download.return_value = "/downloads/videos/test.mp4"
-        from unittest.mock import AsyncMock
-        mock_convert.side_effect = AsyncMock(return_value="/downloads/videos/test.mp4")
-        
-        result = await route_video_download(mock_args)
-        
-        # Verify result
-        assert result["success"] is True
-        assert result["title"] == "Test Video"
-        assert result["format"] == "mp4"
-        assert result["converted"] is False
-        
-        # Verify function calls (create_youtube_instance is called with url and progress callback)
-        mock_create_yt.assert_called_once()
-        mock_select_stream.assert_called_once_with(mock_yt, "720p")
-        # Path will be normalized by the function, so check actual call
-        mock_download.assert_called_once_with(mock_stream, "/downloads/videos")
+    monkeypatch.setattr(
+        md.youtube_downloader,
+        "validate_youtube_url",
+        lambda u: {"is_valid": True, "is_playlist": False},
+    )
+    monkeypatch.setattr(md.youtube_downloader, "download_single_audio", fake_audio)
+    monkeypatch.setattr(md.media_converter, "convert_files_functional", fake_convert)
+    monkeypatch.setattr(md.os, "remove", lambda p: None)
+    args = SimpleNamespace(
+        url="https://youtube.com/watch?v=x",
+        resolution=None,
+        format="mp3",
+        output_dir=str(tmp_path),
+    )
+    result = await md.download(args)
+    assert result["success"] is True
+    assert result["file_path"].endswith("a.mp3")
+    assert result["format"] == "mp3"
 
-    @patch('app.tools.media_downloader.get_output_dir')
-    @patch('app.tools.media_downloader.get_audio_format_or_default')
-    @patch('app.tools.youtube_downloader.create_youtube_instance')
-    @patch('app.tools.media_downloader.ensure_directory_exists')
-    @patch('app.tools.youtube_downloader.download_stream')
-    @patch('app.tools.media_downloader.convert_if_needed')
-    @pytest.mark.asyncio
-    async def test_download_audio_pipeline_success(self, mock_convert, mock_download,
-                                           mock_ensure_dir, mock_create_yt,
-                                           mock_get_format, mock_get_dir):
-        """Test successful audio download pipeline"""
-        # Setup mocks
-        mock_args = MagicMock()
-        mock_args.url = "https://youtube.com/watch?v=test"
-        mock_args.format = "mp3"
-        
-        mock_get_dir.return_value = "/downloads"
-        mock_get_format.return_value = "mp3"
-        mock_yt = MagicMock()
-        mock_yt.title = "Test Audio"
-        mock_create_yt.return_value = mock_yt
-        mock_stream = MagicMock()
-        mock_yt.streams.get_audio_only.return_value = mock_stream
-        mock_ensure_dir.return_value = "/downloads/audios"
-        mock_download.return_value = "/downloads/audios/test.webm"
-        from unittest.mock import AsyncMock
-        mock_convert.side_effect = AsyncMock(return_value=True)
-        
-        result = await route_audio_download(mock_args)
-        
-        # Verify result
-        assert result["success"] is True
-        assert result["title"] == "Test Audio"
-        assert result["format"] == "mp3"
-        assert result["converted"] is True
 
-    @patch('app.tools.media_downloader.route_video_download')
-    @pytest.mark.asyncio
-    async def test_download_dispatcher_video(self, mock_video_pipeline):
-        """Test download dispatcher for video"""
-        mock_args = MagicMock()
-        mock_args.type = "video"
-        mock_result = {"success": True}
-        from unittest.mock import AsyncMock
-        mock_video_pipeline.side_effect = AsyncMock(return_value=mock_result)
-        
-        result = await download(mock_args)
-        
-        assert result == mock_result
-        mock_video_pipeline.assert_called_once_with(mock_args)
+@pytest.mark.asyncio
+async def test_download_playlist(monkeypatch, tmp_path):
+    class FakePlaylist:
+        title = "MyList"
 
-    @patch('app.tools.media_downloader.route_audio_download')
-    @pytest.mark.asyncio
-    async def test_download_dispatcher_audio(self, mock_audio_pipeline):
-        """Test download dispatcher for audio"""
-        mock_args = MagicMock()
-        mock_args.type = "audio"
-        mock_result = {"success": True}
-        from unittest.mock import AsyncMock
-        mock_audio_pipeline.side_effect = AsyncMock(return_value=mock_result)
-        
-        result = await download(mock_args)
-        
-        assert result == mock_result
-        mock_audio_pipeline.assert_called_once_with(mock_args)
+    async def fake_playlist_videos(url, output_path, resolution=None, max_concurrent=3):
+        return [
+            {"success": True, "file_path": str(tmp_path / "1.mp4"), "metadata": {"title": "one"}},
+            {"success": False, "file_path": None, "metadata": {"title": "two", "error": "boom"}},
+        ]
 
-    @pytest.mark.asyncio
-    async def test_download_dispatcher_invalid_type(self):
-        """Test download dispatcher with invalid type"""
-        mock_args = MagicMock()
-        mock_args.type = "invalid"
-        
-        with pytest.raises(ValueError, match="Unsupported download type: invalid"):
-            await download(mock_args)
+    monkeypatch.setattr(
+        md.youtube_downloader,
+        "validate_youtube_url",
+        lambda u: {"is_valid": True, "is_playlist": True},
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "create_playlist_instance", lambda u: FakePlaylist()
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "download_playlist_videos", fake_playlist_videos
+    )
+    args = SimpleNamespace(
+        url="https://youtube.com/playlist?list=x",
+        resolution=None,
+        format=None,
+        output_dir=str(tmp_path),
+    )
+    results = await md.download(args)
+    assert isinstance(results, list)
+    assert len(results) == 2
+    assert results[0]["success"] is True and results[0]["title"] == "one"
+    assert results[1]["success"] is False
+    assert (tmp_path / "MyList").is_dir()
 
-    @pytest.mark.asyncio
-    async def test_download_youtube_video_pipeline_error(self):
-        """Test video download pipeline error handling"""
-        mock_args = MagicMock()
-        mock_args.url = "https://invalid.com/watch?v=test"  # Invalid URL
-        mock_args.format = "mp4"
-        
-        # Should raise ValueError for unsupported URL
-        with pytest.raises(ValueError, match="Unsupported URL"):
-            await route_video_download(mock_args)
+
+@pytest.mark.asyncio
+async def test_download_playlist_audio_conversion(monkeypatch, tmp_path):
+    """--format mp3 on a playlist downloads audio for every item and converts each to mp3."""
+    class FakePlaylist:
+        title = "MyList"
+
+    calls = {}
+
+    async def fake_playlist_audios(url, output_path, max_concurrent=3):
+        calls["audio"] = True
+        return [
+            {"success": True, "file_path": str(tmp_path / "1.m4a"), "metadata": {"title": "one"}},
+            {"success": True, "file_path": str(tmp_path / "2.m4a"), "metadata": {"title": "two"}},
+        ]
+
+    async def fake_playlist_videos(url, output_path, resolution=None, max_concurrent=3):
+        calls["video"] = True
+        return []
+
+    async def fake_convert(input_files, output_format, output_dir=None, max_workers=1):
+        return [
+            {
+                "input_file": str(f),
+                "output_file": str(tmp_path / f"{f.stem}.mp3"),
+                "success": True,
+                "format": output_format,
+            }
+            for f in input_files
+        ]
+
+    monkeypatch.setattr(
+        md.youtube_downloader,
+        "validate_youtube_url",
+        lambda u: {"is_valid": True, "is_playlist": True},
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "create_playlist_instance", lambda u: FakePlaylist()
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "download_playlist_audios", fake_playlist_audios
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "download_playlist_videos", fake_playlist_videos
+    )
+    monkeypatch.setattr(md.media_converter, "convert_files_functional", fake_convert)
+    monkeypatch.setattr(md.os, "remove", lambda p: None)
+    args = SimpleNamespace(
+        url="https://youtube.com/playlist?list=x",
+        resolution=None,
+        format="mp3",
+        output_dir=str(tmp_path),
+    )
+    results = await md.download(args)
+    # routed to the audio path, not the video path
+    assert calls.get("audio") is True
+    assert "video" not in calls
+    # every item came back converted to mp3
+    assert len(results) == 2
+    assert all(r["success"] and r["format"] == "mp3" for r in results)
+    assert all(r["file_path"].endswith(".mp3") for r in results)
