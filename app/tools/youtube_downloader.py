@@ -1,6 +1,5 @@
 import asyncio
 from typing import Optional, Dict, Any, Callable, List
-from functools import partial
 from pytubefix import YouTube, Playlist
 from pytubefix.cli import on_progress
 
