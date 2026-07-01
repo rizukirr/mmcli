@@ -1,80 +1,31 @@
-# MMCLI — YouTube Downloader
+# mmcli
 
-MMCLI is a command-line **YouTube downloader** with built-in format conversion.
-Give it a video or playlist URL and it downloads the media, optionally
-converting it to the audio or video format you want.
+mmcli is a command-line YouTube downloader with built-in format conversion. Give
+it a video or playlist URL and it downloads the media, optionally converting it
+to the audio or video format you choose. Playlists are detected automatically and
+saved into a per-playlist folder. Requires Python 3.12+ and FFmpeg on your `PATH`.
 
-## Features
+## Command
 
-- Download YouTube **videos** in the best available quality (or a chosen resolution).
-- Download **audio only** by requesting an audio format (e.g. `--format mp3`).
-- Download entire **playlists** concurrently, organized into a per-playlist folder.
-- **Convert** downloaded media to another container/format via FFmpeg.
-
-## Installation
-
-```bash
-git clone https://github.com/rizkirakasiwi/mmcli.git
-cd mmcli
-
-# Recommended: uv
-uv sync
-uv run mmcli --help
-
-# Or with pip
-pip install -e .
+```
+mmcli <url> [--resolution RES] [--format FMT] [--output-dir DIR]
 ```
 
-Requires **Python 3.12+** and **FFmpeg** on your `PATH` for conversion.
+| Argument | Short | Description |
+|----------|-------|-------------|
+| `url` | | YouTube video or playlist URL (required). |
+| `--resolution` | `-r` | Video resolution, e.g. `720` or `720p`. Ignored for audio formats. Default: highest available. |
+| `--format` | `-f` | Output format. An audio format (`mp3`, `m4a`, `wav`, ...) downloads audio only; a video format (`mp4`, `mkv`, `webm`, ...) converts the container. Default: keep the downloaded video as-is. |
+| `--output-dir` | `-o` | Directory to save into. Default: current directory. |
+| `--version` | `-v` | Print the version and exit. |
 
-## Usage
+Examples:
 
-```bash
-# Best-quality video into the current directory
-mmcli "https://youtube.com/watch?v=..."
-
-# Video at 720p
-mmcli "https://youtube.com/watch?v=..." --resolution 720
-
-# Audio only, as mp3
-mmcli "https://youtube.com/watch?v=..." --format mp3
-
-# Video converted to mkv
-mmcli "https://youtube.com/watch?v=..." --format mkv
-
-# Whole playlist as mp3
-mmcli "https://youtube.com/playlist?list=..." --format mp3
-
-# Pick an output directory (default is the current directory)
-mmcli "https://youtube.com/watch?v=..." --output-dir ~/Downloads
 ```
-
-See [doc/commands.md](doc/commands.md) for the full reference.
-
-## How it works
-
-- A single positional argument: a YouTube video or playlist URL.
-- `--format` decides audio-vs-video: an audio alias downloads the audio stream;
-  a video alias (or no `--format`) downloads video and converts the container if
-  needed.
-- Playlists are detected automatically and downloaded concurrently into
-  `<output-dir>/<playlist-title>/`.
-
-## Supported formats
-
-- **Video:** `mp4`, `mkv`, `avi`, `mov`, `webm`, `flv`, `3gp`, and more.
-- **Audio:** `mp3`, `m4a`, `wav`, `flac`, `aac`, `ogg`, `opus`, and more.
-
-## Development
-
-```bash
-uv sync --extra test
-uv run pytest                 # run the test suite (with coverage)
-uv run pytest tests/test_media_downloader.py   # a single file
+mmcli "https://youtube.com/watch?v=..."                       # best-quality video
+mmcli "https://youtube.com/watch?v=..." --resolution 720      # video at 720p
+mmcli "https://youtube.com/watch?v=..." --format mp3          # audio only, as mp3
+mmcli "https://youtube.com/watch?v=..." --format mkv          # video, converted to mkv
+mmcli "https://youtube.com/playlist?list=..." --format mp3    # whole playlist as mp3
+mmcli "https://youtube.com/watch?v=..." --output-dir ~/Videos # choose the output directory
 ```
-
-All contributors should read [doc/CONTRIBUTOR_GUIDANCE.md](doc/CONTRIBUTOR_GUIDANCE.md).
-
-## License
-
-MIT License. See [LICENSE](LICENSE) for details.
