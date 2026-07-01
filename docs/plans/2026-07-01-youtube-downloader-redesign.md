@@ -1180,7 +1180,7 @@ EOF
 - Replace: `CLAUDE.md`
 - Delete: `doc/configuration.md`, `convert/` (empty dir)
 
-- [ ] **Step 1: Replace `doc/commands.md`**
+- [x] **Step 1: Replace `doc/commands.md`**
 
 Replace the entire contents of `doc/commands.md` with:
 
@@ -1238,7 +1238,7 @@ mmcli "https://youtube.com/watch?v=..." --output-dir ~/Downloads
   from the downloaded file's format. FFmpeg must be installed and on `PATH`.
 ```
 
-- [ ] **Step 2: Replace `README.md`**
+- [x] **Step 2: Replace `README.md`**
 
 Replace the entire contents of `README.md` with:
 
@@ -1325,7 +1325,7 @@ All contributors should read [doc/CONTRIBUTOR_GUIDANCE.md](doc/CONTRIBUTOR_GUIDA
 MIT License. See [LICENSE](LICENSE) for details.
 ```
 
-- [ ] **Step 3: Replace `CLAUDE.md`**
+- [x] **Step 3: Replace `CLAUDE.md`**
 
 Replace the entire contents of `CLAUDE.md` with:
 
@@ -1405,7 +1405,7 @@ no persistent config file. This tool is YouTube download + post-download
 conversion only.
 ```
 
-- [ ] **Step 4: Delete stale doc and empty dir**
+- [x] **Step 4: Delete stale doc and empty dir**
 
 ```bash
 git rm doc/configuration.md
@@ -1414,17 +1414,17 @@ rmdir convert 2>/dev/null || true
 
 (The `convert/` directory is untracked and empty; `rmdir` removes it if present, and the `|| true` keeps the step from failing if it's already gone.)
 
-- [ ] **Step 5: Run the full suite one last time**
+- [x] **Step 5: Run the full suite one last time**
 
 Run: `uv run pytest`
 Expected: PASS — entire suite green.
 
-- [ ] **Step 6: Confirm removals**
+- [x] **Step 6: Confirm removals**
 
 Run: `test ! -e doc/configuration.md && test ! -e convert && test ! -e config.toml && test ! -e app/utils/config.py && echo "all removed"`
 Expected: prints `all removed`
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add README.md CLAUDE.md doc/commands.md
