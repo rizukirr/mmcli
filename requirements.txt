@@ -1,6 +1,5 @@
 ffmpeg-python>=0.2.0
 pytubefix>=10.10.1
-PyYAML>=6.0
 pytest>=9.0
 pytest-cov>=7.0
 pytest-asyncio>=1.0
