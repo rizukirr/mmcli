@@ -778,6 +778,68 @@ async def test_download_playlist(monkeypatch, tmp_path):
     assert results[0]["success"] is True and results[0]["title"] == "one"
     assert results[1]["success"] is False
     assert (tmp_path / "MyList").is_dir()
+
+
+@pytest.mark.asyncio
+async def test_download_playlist_audio_conversion(monkeypatch, tmp_path):
+    """--format mp3 on a playlist downloads audio for every item and converts each to mp3."""
+    class FakePlaylist:
+        title = "MyList"
+
+    calls = {}
+
+    async def fake_playlist_audios(url, output_path, max_concurrent=3):
+        calls["audio"] = True
+        return [
+            {"success": True, "file_path": str(tmp_path / "1.m4a"), "metadata": {"title": "one"}},
+            {"success": True, "file_path": str(tmp_path / "2.m4a"), "metadata": {"title": "two"}},
+        ]
+
+    async def fake_playlist_videos(url, output_path, resolution=None, max_concurrent=3):
+        calls["video"] = True
+        return []
+
+    async def fake_convert(input_files, output_format, output_dir=None, max_workers=1):
+        return [
+            {
+                "input_file": str(f),
+                "output_file": str(tmp_path / f"{f.stem}.mp3"),
+                "success": True,
+                "format": output_format,
+            }
+            for f in input_files
+        ]
+
+    monkeypatch.setattr(
+        md.youtube_downloader,
+        "validate_youtube_url",
+        lambda u: {"is_valid": True, "is_playlist": True},
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "create_playlist_instance", lambda u: FakePlaylist()
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "download_playlist_audios", fake_playlist_audios
+    )
+    monkeypatch.setattr(
+        md.youtube_downloader, "download_playlist_videos", fake_playlist_videos
+    )
+    monkeypatch.setattr(md.media_converter, "convert_files_functional", fake_convert)
+    monkeypatch.setattr(md.os, "remove", lambda p: None)
+    args = SimpleNamespace(
+        url="https://youtube.com/playlist?list=x",
+        resolution=None,
+        format="mp3",
+        output_dir=str(tmp_path),
+    )
+    results = await md.download(args)
+    # routed to the audio path, not the video path
+    assert calls.get("audio") is True
+    assert "video" not in calls
+    # every item came back converted to mp3
+    assert len(results) == 2
+    assert all(r["success"] and r["format"] == "mp3" for r in results)
+    assert all(r["file_path"].endswith(".mp3") for r in results)
 ```
 
 - [ ] **Step 2: Run the test to confirm it fails**
