@@ -92,7 +92,7 @@ EOF
 - Modify: `app/__init__.py`
 - Test: `tests/test_media_format.py`
 
-- [ ] **Step 1: Rewrite the test file**
+- [x] **Step 1: Rewrite the test file**
 
 Replace the entire contents of `tests/test_media_format.py` with:
 
@@ -155,12 +155,12 @@ def test_is_video_format():
     assert is_video_format("mp3") is False
 ```
 
-- [ ] **Step 2: Run the test to confirm it fails**
+- [x] **Step 2: Run the test to confirm it fails**
 
 Run: `uv run pytest tests/test_media_format.py`
 Expected: collection/import error or failures referencing `is_audio_format` / `is_video_format` not importable (they don't exist yet).
 
-- [ ] **Step 3: Edit `app/utils/media_format.py`**
+- [x] **Step 3: Edit `app/utils/media_format.py`**
 
 Delete the `image_formats = [...]` list (currently lines 39–55) and the `subtitle_formats = [...]` list (currently lines 57–65). Then change the `all_formats` line from:
 
@@ -187,7 +187,7 @@ def is_video_format(alias: str) -> bool:
     return any(f["alias"] == alias for f in video_formats)
 ```
 
-- [ ] **Step 4: Update `app/__init__.py` so it stops importing removed names**
+- [x] **Step 4: Update `app/__init__.py` so it stops importing removed names**
 
 Replace the entire contents of `app/__init__.py` with:
 
@@ -197,12 +197,12 @@ from .utils.command_manager import command_manager
 from .utils.media_format import all_formats, audio_formats, video_formats
 ```
 
-- [ ] **Step 5: Run the test to confirm it passes**
+- [x] **Step 5: Run the test to confirm it passes**
 
 Run: `uv run pytest tests/test_media_format.py`
 Expected: PASS (all tests in the file).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/utils/media_format.py app/__init__.py tests/test_media_format.py
