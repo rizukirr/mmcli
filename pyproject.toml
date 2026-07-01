@@ -1,28 +1,26 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmcli"
 version = "0.1.0b1"
-description = "A multimedia CLI tool for downloading and converting videos, audio, and images"
+description = "A command-line YouTube downloader with built-in audio/video format conversion"
 authors = [{name = "rizkirakasiwi"}]
 dependencies = [
-    "ffmpeg-python",
-    "pytubefix",
+    "ffmpeg-python>=0.2.0",
+    "pytest>=9.0",
+    "pytest-asyncio>=1.0",
+    "pytest-cov>=7.0",
+    "pytubefix>=10.10.1",
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.12"
 
 [project.optional-dependencies]
 test = [
-    "pytest>=6.0",
-    "pytest-mock>=3.0",
-    "pytest-cov>=3.0",
-    "pytest-asyncio>=0.21.0",
-]
-config = [
-    "tomli>=2.0.1; python_version < '3.11'",
-    "PyYAML>=6.0",
+    "pytest>=9.0",
+    "pytest-cov>=7.0",
+    "pytest-asyncio>=1.0",
 ]
 
 [project.scripts]

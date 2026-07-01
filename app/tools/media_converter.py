@@ -2,29 +2,11 @@ import asyncio
 import ffmpeg
 import os
 import textwrap
-import sys
 from pathlib import Path
-from glob import glob
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from functools import partial, reduce
+from functools import reduce
 from ..utils.media_format import all_formats
-from ..utils.config import get_max_workers_default
-
-
-def resolve_file_paths(input_pattern: str) -> List[Path]:
-    """Resolve input file pattern to actual file paths, supporting glob patterns."""
-    if "*" in input_pattern:
-        files = [Path(p) for p in glob(input_pattern)]
-        if not files:
-            files = [Path(p) for p in glob(f"**/{input_pattern}", recursive=True)]
-    else:
-        files = [Path(input_pattern)] if Path(input_pattern).exists() else []
-
-    if not files:
-        raise FileNotFoundError(f"No file(s) found matching: {input_pattern}")
-
-    return files
 
 
 def ensure_output_directory(output_dir: Optional[str]) -> Path:
@@ -219,41 +201,3 @@ async def convert_files_functional(
     print_conversion_results(results, output_format, str(resolved_output_dir))
     
     return results
-
-
-def validate_conversion_args(args) -> Dict[str, Any]:
-    """Validate and extract conversion arguments."""
-    if not hasattr(args, 'path') or not args.path:
-        raise ValueError("Input path is required")
-    if not hasattr(args, 'to') or not args.to:
-        raise ValueError("Output format is required")
-    
-    # Get max_workers from CLI args or config default
-    max_workers = getattr(args, 'max_workers', None)
-    if max_workers is None:
-        max_workers = get_max_workers_default()
-    
-    return {
-        "input_pattern": args.path,
-        "output_format": args.to,
-        "output_dir": getattr(args, 'output_dir', None),
-        "max_workers": max_workers
-    }
-
-
-async def convert(args) -> List[Dict[str, Any]]:
-    """Main convert function with async approach."""
-    try:
-        validated_args = validate_conversion_args(args)
-        input_files = resolve_file_paths(validated_args["input_pattern"])
-        
-        return await convert_files_functional(
-            input_files,
-            validated_args["output_format"],
-            validated_args["output_dir"],
-            validated_args["max_workers"]
-        )
-        
-    except Exception as e:
-        print(f"Error converting file: {e}")
-        sys.exit(1)

@@ -36,38 +36,20 @@ audio_formats = [
     {"alias": "eac3", "format": "eac3", "desc": "Enhanced AC-3"},
 ]
 
-image_formats = [
-    {"alias": "jpg", "format": "mjpeg", "desc": "JPEG Image"},
-    {"alias": "jpeg", "format": "mjpeg", "desc": "JPEG Image"},
-    {"alias": "png", "format": "png", "desc": "Portable Network Graphics"},
-    {"alias": "webp", "format": "webp", "desc": "WebP Image"},
-    {"alias": "gif", "format": "gif", "desc": "Graphics Interchange Format"},
-    {"alias": "bmp", "format": "bmp", "desc": "Bitmap Image"},
-    {"alias": "tif", "format": "tiff", "desc": "Tagged Image File Format"},
-    {"alias": "tiff", "format": "tiff", "desc": "Tagged Image File Format"},
-    {"alias": "ico", "format": "ico", "desc": "Windows Icon"},
-    {"alias": "svg", "format": "svg", "desc": "Scalable Vector Graphics"},
-    {"alias": "heif", "format": "heif", "desc": "High Efficiency Image Format"},
-    {"alias": "heic", "format": "hevc", "desc": "High Efficiency Image Coding"},
-    {"alias": "jp2", "format": "jpeg2000", "desc": "JPEG 2000"},
-    {"alias": "j2k", "format": "jpeg2000", "desc": "JPEG 2000"},
-    {"alias": "jxl", "format": "jpegxl", "desc": "JPEG XL"},
-]
-
-subtitle_formats = [
-    {"alias": "srt", "format": "srt", "desc": "SubRip Subtitle"},
-    {"alias": "ass", "format": "ass", "desc": "Advanced SubStation Alpha"},
-    {"alias": "ssa", "format": "ass", "desc": "SubStation Alpha"},
-    {"alias": "vtt", "format": "webvtt", "desc": "WebVTT Subtitle"},
-    {"alias": "sub", "format": "microdvd", "desc": "MicroDVD Subtitle"},
-    {"alias": "idx", "format": "microdvd", "desc": "MicroDVD Index"},
-    {"alias": "mks", "format": "matroska", "desc": "Matroska Subtitles"},
-]
-
-all_formats = video_formats + audio_formats + image_formats + subtitle_formats
+all_formats = video_formats + audio_formats
 
 
 def get_format(format: str, formats: list = all_formats) -> list:
     return list(
         filter(lambda f: f["alias"] == format or f["format"] == format, formats)
     )
+
+
+def is_audio_format(alias: str) -> bool:
+    """True when alias names an audio output format."""
+    return any(f["alias"] == alias for f in audio_formats)
+
+
+def is_video_format(alias: str) -> bool:
+    """True when alias names a video output format."""
+    return any(f["alias"] == alias for f in video_formats)

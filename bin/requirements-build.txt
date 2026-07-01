@@ -1,5 +1,5 @@
-Cython>=0.29.0
-setuptools>=45.0
-wheel>=0.36.0
-ffmpeg-python
-pytubefix
+Cython>=3.0.0
+setuptools>=64.0
+wheel>=0.43.0
+ffmpeg-python>=0.2.0
+pytubefix>=10.10.1

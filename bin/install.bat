@@ -1,5 +1,5 @@
 @echo off
-REM Complete Installation Script for mmcli multimedia tool (Windows)
+REM Complete Installation Script for mmcli YouTube downloader (Windows)
 REM This script installs mmcli globally using pipx
 
 setlocal enabledelayedexpansion
@@ -171,9 +171,9 @@ echo.
 echo mmcli is now installed and available globally!
 echo.
 echo Usage examples:
-echo   mmcli download video --url "https://youtube.com/watch?v=..." --resolution 720p
-echo   mmcli download audio --url "https://youtube.com/watch?v=..." --format mp3
-echo   mmcli convert --path "videos/*.mp4" --to mp3 --output_dir converted/
+echo   mmcli "https://youtube.com/watch?v=..."
+echo   mmcli "https://youtube.com/watch?v=..." --resolution 720 --format mp4
+echo   mmcli "https://youtube.com/playlist?list=..." --format mp3 --output-dir "%USERPROFILE%\Music"
 echo.
 echo Type 'mmcli --help' for full command reference
 echo.

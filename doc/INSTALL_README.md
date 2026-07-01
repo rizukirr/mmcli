@@ -1,6 +1,6 @@
 # mmcli Installation Guide
 
-This guide explains how to install mmcli (multimedia CLI tool) on your system so you can use it from anywhere in your terminal.
+This guide explains how to install mmcli (a command-line YouTube downloader) on your system so you can use it from anywhere in your terminal.
 
 ## Quick Installation
 
@@ -27,8 +27,8 @@ The installation script will:
 ## Prerequisites
 
 ### Required
-- **Python 3.6+** - [Download from python.org](https://python.org/downloads/)
-- **pip** - Usually comes with Python
+- **Python 3.12+** - [Download from python.org](https://python.org/downloads/)
+- **pip** or **[uv](https://docs.astral.sh/uv/)** - for installing dependencies
 
 ### Automatically Handled
 - **ffmpeg** - The installer will attempt to install this automatically:
@@ -44,15 +44,17 @@ The installation script will:
 Once installed, you can use mmcli from anywhere in your terminal:
 
 ```bash
-# Download YouTube video
-mmcli download video --url "https://youtube.com/watch?v=..." --resolution 720p
+# Download a video (best quality) into the current directory
+mmcli "https://youtube.com/watch?v=..."
 
-# Download YouTube audio
-mmcli download audio --url "https://youtube.com/watch?v=..." --format mp3
+# Download at a specific resolution
+mmcli "https://youtube.com/watch?v=..." --resolution 720
 
-# Convert media files
-mmcli convert --path "videos/*.mp4" --to mp3 --output_dir converted/
-mmcli convert --path "image.jpg" --to png
+# Download audio only, as mp3
+mmcli "https://youtube.com/watch?v=..." --format mp3
+
+# Download a whole playlist as mp3 into a chosen directory
+mmcli "https://youtube.com/playlist?list=..." --format mp3 --output-dir ~/Music
 
 # Get help and version
 mmcli --help
@@ -80,7 +82,7 @@ mmcli --version
 - Or run with sudo: `sudo ./install.sh`
 
 ### Python version issues
-- Ensure you have Python 3.6 or newer
+- Ensure you have Python 3.12 or newer
 - On some systems, use `python3` instead of `python`
 
 ## Manual Installation
@@ -89,7 +91,7 @@ If the automatic scripts don't work, you can install manually:
 
 ```bash
 # Navigate to project root
-cd /path/to/multimedia
+cd /path/to/mmcli
 
 # Install dependencies
 pip install ffmpeg-python pytubefix
