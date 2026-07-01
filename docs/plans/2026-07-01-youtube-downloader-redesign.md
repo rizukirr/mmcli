@@ -222,7 +222,7 @@ EOF
 - Modify: `app/utils/command_manager.py`
 - Test: `tests/test_command_manager.py`
 
-- [ ] **Step 1: Rewrite the test file**
+- [x] **Step 1: Rewrite the test file**
 
 Replace the entire contents of `tests/test_command_manager.py` with:
 
@@ -284,12 +284,12 @@ def test_version_exits_zero():
     assert exc.value.code == 0
 ```
 
-- [ ] **Step 2: Run the test to confirm it fails**
+- [x] **Step 2: Run the test to confirm it fails**
 
 Run: `uv run pytest tests/test_command_manager.py`
 Expected: failures — the current parser uses `download`/`convert` subcommands, so `args.url` is unset and at least one new test fails with an `AttributeError` or `SystemExit`.
 
-- [ ] **Step 3: Rewrite `app/utils/command_manager.py`**
+- [x] **Step 3: Rewrite `app/utils/command_manager.py`**
 
 Replace the entire contents with:
 
@@ -341,12 +341,12 @@ def command_manager():
     return parser.parse_args()
 ```
 
-- [ ] **Step 4: Run the test to confirm it passes**
+- [x] **Step 4: Run the test to confirm it passes**
 
 Run: `uv run pytest tests/test_command_manager.py`
 Expected: PASS (all tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/utils/command_manager.py tests/test_command_manager.py
