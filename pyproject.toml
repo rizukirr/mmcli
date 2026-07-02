@@ -24,7 +24,7 @@ test = [
 ]
 
 [project.scripts]
-mmcli = "main:main"
+mmcli = "app.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
