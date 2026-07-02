@@ -1,5 +1,9 @@
 # mmcli
 
+[![PyPI version](https://img.shields.io/pypi/v/mmcli-dl)](https://pypi.org/project/mmcli-dl/)
+[![Python versions](https://img.shields.io/pypi/pyversions/mmcli-dl)](https://pypi.org/project/mmcli-dl/)
+[![License: MIT](https://img.shields.io/pypi/l/mmcli-dl)](LICENSE)
+
 mmcli is a command-line YouTube downloader with built-in format conversion. Give
 it a video or playlist URL and it downloads the media, optionally converting it
 to the audio or video format you choose. Playlists are detected automatically and
@@ -7,9 +11,15 @@ saved into a per-playlist folder. Requires Python 3.12+ and FFmpeg on your `PATH
 
 ## Install
 
+From PyPI (requires Python 3.12+):
+
 ```
 pip install mmcli-dl      # or: pipx install mmcli-dl / uv tool install mmcli-dl
 ```
+
+Or download a standalone binary (no Python required) for your platform from the
+[latest release](https://github.com/rizukirr/mmcli/releases/latest) — available
+for Linux, Windows, and macOS (x86_64 and arm64).
 
 The installed command is `mmcli`. FFmpeg must be on your `PATH` for format conversion.
 
