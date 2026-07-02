@@ -5,6 +5,14 @@ it a video or playlist URL and it downloads the media, optionally converting it
 to the audio or video format you choose. Playlists are detected automatically and
 saved into a per-playlist folder. Requires Python 3.12+ and FFmpeg on your `PATH`.
 
+## Install
+
+```
+pip install mmcli-dl      # or: pipx install mmcli-dl / uv tool install mmcli-dl
+```
+
+The installed command is `mmcli`. FFmpeg must be on your `PATH` for format conversion.
+
 ## Command
 
 ```
