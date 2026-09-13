@@ -25,7 +25,7 @@ classifiers = [
 ]
 dependencies = [
     "ffmpeg-python>=0.2.0",
-    "pytubefix>=10.10.1",
+    "pytubefix>=11.1.0",
 ]
 
 [project.optional-dependencies]
