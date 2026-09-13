@@ -152,24 +152,25 @@ tests/
 import pytest
 from unittest.mock import patch, MagicMock
 
+
 class TestYourFeature:
     def setup_method(self):
         """Set up test fixtures"""
         pass
-        
+
     def teardown_method(self):
         """Clean up after tests"""
         pass
-        
-    @patch('your.module.dependency')
+
+    @patch("your.module.dependency")
     def test_your_function_success(self, mock_dependency):
         """Test successful execution"""
         # Arrange
         mock_dependency.return_value = "expected_result"
-        
+
         # Act
         result = your_function()
-        
+
         # Assert
         assert result == "expected_result"
         mock_dependency.assert_called_once()
