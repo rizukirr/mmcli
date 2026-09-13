@@ -1,12 +1,12 @@
 import os
 import sys
-from pathlib import Path
-from typing import Optional, Dict, Any, List
 from functools import reduce
-from ..utils.media_format import is_audio_format
+from pathlib import Path
+from typing import Any
+
 from ..utils.constants import PLAYLIST_MAX_CONCURRENT
-from . import media_converter
-from . import youtube_downloader
+from ..utils.media_format import is_audio_format
+from . import media_converter, youtube_downloader
 
 
 def resolve_output_dir(args) -> str:
@@ -21,7 +21,7 @@ def ensure_directory_exists(path: str) -> str:
     return path
 
 
-def normalize_resolution(resolution: Optional[str]) -> Optional[str]:
+def normalize_resolution(resolution: str | None) -> str | None:
     """Normalize '720' -> '720p' for pytubefix; pass through None and '720p'."""
     if not resolution:
         return None
@@ -33,7 +33,7 @@ def extract_file_extension(filepath: str) -> str:
     return os.path.splitext(filepath)[1][1:].lower()
 
 
-def should_convert(current_ext: str, target_format: Optional[str]) -> bool:
+def should_convert(current_ext: str, target_format: str | None) -> bool:
     """True when a non-empty target format differs from the current extension."""
     if not target_format:
         return False
@@ -73,12 +73,12 @@ def resolve_playlist_output(base_dir: str, url: str) -> str:
     try:
         playlist = youtube_downloader.create_playlist_instance(url)
         title = playlist.title
-    except Exception:
+    except Exception:  # noqa: BLE001
         title = "playlist"
     return ensure_directory_exists(os.path.join(base_dir, sanitize_subfolder(title)))
 
 
-def _finalize_single(result: Dict[str, Any], converted_path: str) -> Dict[str, Any]:
+def _finalize_single(result: dict[str, Any], converted_path: str) -> dict[str, Any]:
     """Build the user-facing result dict for a single download."""
     return {
         "success": True,
@@ -88,7 +88,7 @@ def _finalize_single(result: Dict[str, Any], converted_path: str) -> Dict[str, A
     }
 
 
-def _failed(result: Dict[str, Any]) -> Dict[str, Any]:
+def _failed(result: dict[str, Any]) -> dict[str, Any]:
     """Build a failure result dict from a download result."""
     return {
         "success": False,
@@ -99,7 +99,7 @@ def _failed(result: Dict[str, Any]) -> Dict[str, Any]:
 
 async def _download_single(
     url: str, output_path: str, audio_only: bool, resolution, target_format
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if audio_only:
         result = await youtube_downloader.download_single_audio(url, output_path)
     else:
@@ -120,7 +120,7 @@ async def _download_single(
 
 async def _download_playlist(
     url: str, output_path: str, audio_only: bool, resolution, target_format
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     if audio_only:
         results = await youtube_downloader.download_playlist_audios(
             url, output_path, max_concurrent=PLAYLIST_MAX_CONCURRENT
@@ -133,10 +133,10 @@ async def _download_playlist(
 
 
 async def _finalize_playlist(
-    results: List[Dict[str, Any]], target_format: Optional[str]
-) -> List[Dict[str, Any]]:
+    results: list[dict[str, Any]], target_format: str | None
+) -> list[dict[str, Any]]:
     downloaded = [r["file_path"] for r in results if r["success"] and r["file_path"]]
-    conversion_map: Dict[str, Dict[str, Any]] = {}
+    conversion_map: dict[str, dict[str, Any]] = {}
 
     if target_format:
         to_convert = [
@@ -173,7 +173,7 @@ async def _finalize_playlist(
     return processed
 
 
-def calculate_success_stats(results: List[Dict[str, Any]]) -> Dict[str, int]:
+def calculate_success_stats(results: list[dict[str, Any]]) -> dict[str, int]:
     """Tally total/success/failed across a list of result dicts."""
     return reduce(
         lambda acc, r: {
@@ -228,6 +228,6 @@ async def download(args):
         return results
     except SystemExit:
         raise
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error: {e}")
         sys.exit(1)
