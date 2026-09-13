@@ -1,16 +1,18 @@
 import asyncio
-import ffmpeg
 import os
 import shutil
 import textwrap
-from pathlib import Path
 from datetime import datetime
-from typing import Optional, List, Dict, Any
 from functools import reduce
+from pathlib import Path
+from typing import Any
+
+import ffmpeg
+
 from ..utils.media_format import all_formats
 
 
-def ensure_output_directory(output_dir: Optional[str]) -> Path:
+def ensure_output_directory(output_dir: str | None) -> Path:
     """Create output directory if needed and return Path object."""
     path = Path(output_dir) if output_dir else Path(os.getcwd()) / "convert"
     path.mkdir(parents=True, exist_ok=True)
@@ -19,7 +21,7 @@ def ensure_output_directory(output_dir: Optional[str]) -> Path:
 
 def generate_output_filename(input_file: Path, output_format: str) -> str:
     """Generate unique output filename with timestamp."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    timestamp = datetime.now().astimezone().strftime("%Y%m%d_%H%M%S_%f")
     return f"{input_file.stem}_{timestamp}.{output_format}"
 
 
@@ -29,7 +31,7 @@ def create_output_path(input_file: Path, output_format: str, output_dir: Path) -
     return output_dir / output_filename
 
 
-def find_ffmpeg_format(output_format: str) -> Optional[str]:
+def find_ffmpeg_format(output_format: str) -> str | None:
     """Find matching ffmpeg format from format alias."""
     format_matches = list(
         filter(lambda fmt: fmt["alias"] == output_format, all_formats)
@@ -39,7 +41,7 @@ def find_ffmpeg_format(output_format: str) -> Optional[str]:
 
 def create_conversion_config(
     input_file: Path, output_format: str, output_dir: Path
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create conversion configuration object."""
     ffmpeg_format = find_ffmpeg_format(output_format)
     output_path = create_output_path(input_file, output_format, output_dir)
@@ -52,7 +54,7 @@ def create_conversion_config(
     }
 
 
-async def execute_ffmpeg_conversion(config: Dict[str, Any]) -> bool:
+async def execute_ffmpeg_conversion(config: dict[str, Any]) -> bool:
     """Execute ffmpeg conversion with given configuration asynchronously."""
     if not config["ffmpeg_format"]:
         print(f"Unsupported format: {config['output_format']}")
@@ -64,7 +66,7 @@ async def execute_ffmpeg_conversion(config: Dict[str, Any]) -> bool:
                 str(config["output_path"]), format=config["ffmpeg_format"]
             ).run(quiet=True, overwrite_output=True)
             return True
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"Error converting {config['input_file']}: {e}")
             return False
 
@@ -74,7 +76,7 @@ async def execute_ffmpeg_conversion(config: Dict[str, Any]) -> bool:
 
 async def convert_single_file_functional(
     input_file: Path, output_format: str, output_dir: Path
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Convert single file using functional approach with detailed result."""
     config = create_conversion_config(input_file, output_format, output_dir)
     success = await execute_ffmpeg_conversion(config)
@@ -88,14 +90,14 @@ async def convert_single_file_functional(
 
 
 async def process_conversion_batch(
-    input_files: List[Path],
+    input_files: list[Path],
     output_format: str,
     output_dir: Path,
     max_concurrent: int = 1,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Process batch conversion using async concurrency control."""
 
-    async def convert_with_feedback(input_file: Path) -> Dict[str, Any]:
+    async def convert_with_feedback(input_file: Path) -> dict[str, Any]:
         try:
             result = await convert_single_file_functional(
                 input_file, output_format, output_dir
@@ -105,7 +107,7 @@ async def process_conversion_batch(
             else:
                 print(f"[FAIL] Failed to convert {input_file.name}")
             return result
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"[ERROR] Error converting {input_file.name}: {e}")
             return {
                 "input_file": str(input_file),
@@ -158,7 +160,7 @@ async def process_conversion_batch(
         return processed_results
 
 
-def calculate_conversion_stats(results: List[Dict[str, Any]]) -> Dict[str, int]:
+def calculate_conversion_stats(results: list[dict[str, Any]]) -> dict[str, int]:
     """Calculate conversion statistics from results."""
     return reduce(
         lambda acc, result: {
@@ -172,7 +174,7 @@ def calculate_conversion_stats(results: List[Dict[str, Any]]) -> Dict[str, int]:
 
 
 def format_conversion_summary(
-    stats: Dict[str, int], output_format: str, output_dir: str
+    stats: dict[str, int], output_format: str, output_dir: str
 ) -> str:
     """Format conversion summary message."""
     return textwrap.dedent(f"""
@@ -185,7 +187,7 @@ def format_conversion_summary(
 
 
 def print_conversion_results(
-    results: List[Dict[str, Any]], output_format: str, output_dir: str
+    results: list[dict[str, Any]], output_format: str, output_dir: str
 ) -> None:
     """Print detailed conversion results and summary."""
     stats = calculate_conversion_stats(results)
@@ -201,11 +203,11 @@ def print_conversion_results(
 
 
 async def convert_files_functional(
-    input_files: List[Path],
+    input_files: list[Path],
     output_format: str,
-    output_dir: Optional[str] = None,
+    output_dir: str | None = None,
     max_workers: int = 1,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Convert batch of files using async concurrency."""
     if shutil.which("ffmpeg") is None:
         print(

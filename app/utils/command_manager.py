@@ -1,6 +1,7 @@
 import argparse
-from .media_format import all_formats, video_formats, audio_formats
+
 from .constants import APP_VERSION
+from .media_format import all_formats, audio_formats, video_formats
 
 
 def command_manager():

@@ -1,5 +1,6 @@
 import asyncio
-from app import download, command_manager
+
+from app import command_manager, download
 
 
 async def _async_main():
@@ -14,5 +15,5 @@ def main():
         asyncio.run(_async_main())
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error: {e}")
